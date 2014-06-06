@@ -23,10 +23,12 @@ class Process(object):
         return train
     '''
 
-    def _str2words(self,string):
+    def _str2words(self,test):
         words =[]
         regex=re.compile("(?x) ( [\w-]+ | [\x80-\xff]{3} )")
-        words = [w for w in regex.split(string) if w]
+        for string in test:
+            word = [w for w in regex.split(string) if w]
+        words.append(word)
         return words
     def _statics_hidden(self):
         '''
@@ -129,8 +131,30 @@ class Process(object):
         
         return (conf_prob,trans_prob)
         
-
-
+    def _word_sequence(self,test,o_hstate):
+        sequence = []
+        for i in range(len(test)):
+            length = len(test[i])
+            temp = []
+            k = 0
+            print len(o_hstate[i]),len(test[i])
+            while k <length:
+                if o_hstate[i][k]=='S':
+                    temp.append(test[i][k])
+                else :
+                    s=test[i][k]
+                    k+=1
+                    while o_hstate[i][k] != 'E':
+                        s += test[i][k]
+                        k +=1
+                    s += test[i][k]
+                    temp.append(s)
+                k += 1
+                
+            sequence.append(' '.join(temp))
+            print sequence[0]
+        return sequence
+    
         
 
 

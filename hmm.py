@@ -260,3 +260,5 @@ class Model(object):
         
         self._iteration(phi,trans_prob,conf_prob,observations)
 
+
+        
