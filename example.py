@@ -28,8 +28,11 @@ The trans_prob is the probability of a hidden state trans to another
 '''
 conf_prob,trans_prob=pro._tran_conf_prob(train,word_count,hidden_states)
 
-test = ["中华人民共和国今天成立了中国人民从此站起来了",
-        "江泽民的三个代表是中国在社会主义改革过程中的智慧结晶"]
+test = [["中华人民共和国今天成立了中国人民从此站起来了"],
+        ["江泽民的三个代表是中国在社会主义改革过程中的智慧结晶"],
+        ["人民日报称改革开发的伟大旗帜要坚定不移动的走下去"],
+        ["日理万机的周总理"],
+        ["国务院今天颁发了关于农业的改革方向前进步伐"]]
 observations = pro._str2words(test)
 
 phi = {'B':0.5,'E':0,'M':0,'S':0.5}

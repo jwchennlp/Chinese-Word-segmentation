@@ -27,8 +27,8 @@ class Process(object):
         words =[]
         regex=re.compile("(?x) ( [\w-]+ | [\x80-\xff]{3} )")
         for string in test:
-            word = [w for w in regex.split(string) if w]
-        words.append(word)
+            word = [w for w in regex.split(string[0]) if w]
+            words.append(word)
         return words
     def _statics_hidden(self):
         '''
@@ -97,7 +97,6 @@ class Process(object):
         for i in self._S:
             for j in self._S:
                 trans_prob[i][j] /= float(state_count[i])
-        print trans_prob
         return (trans_prob,state_count)
     
     def _cal_conf(self,h_s,word_count,train,state_count):
@@ -137,7 +136,6 @@ class Process(object):
             length = len(test[i])
             temp = []
             k = 0
-            print len(o_hstate[i]),len(test[i])
             while k <length:
                 if o_hstate[i][k]=='S':
                     temp.append(test[i][k])
@@ -150,9 +148,9 @@ class Process(object):
                     s += test[i][k]
                     temp.append(s)
                 k += 1
-                
+            print ' '.join(temp)
             sequence.append(' '.join(temp))
-            print sequence[0]
+            
         return sequence
     
         
