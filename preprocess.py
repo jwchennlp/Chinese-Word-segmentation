@@ -2,6 +2,10 @@
 #coding:utf-8
 
 import codecs,re
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+
 
 
 class Process(object):
@@ -25,11 +29,42 @@ class Process(object):
 
     def _str2words(self,test):
         words =[]
-        regex=re.compile("(?x) ( [\w-]+ | [\x80-\xff]{3} )")
+        x=codecs.lookup("utf-8")
         for string in test:
-            word = [w for w in regex.split(string[0]) if w]
+            word = x.decode(string[0])[0]
             words.append(word)
         return words
+
+    def _statics(self):
+        f = codecs.open(self._file_dir,'rb',encoding = 'utf-8')
+        hidden_states,train = [],[]
+        for line in f.readlines():
+            '''
+            First make tag for the tokenize in the corpus
+            '''
+            hidden_state = ''
+            words = []
+            tokenizes = line.split()
+            for token in tokenizes:
+                length = len(token)
+                if length == 1:
+                    hidden_state += 'S'
+                elif length==2:
+                    hidden_state += 'BE'
+                else:
+                    hidden_state += 'B'+(length-2)*'M'+'E'
+            '''
+            Secong we should extart single word from the corpus
+            '''
+            line = line.replace(' ','')
+            line = line.replace('\r\n','')
+            for word in line:
+                words.append(word)
+            if len(words) >0:
+                train.append(words)
+                hidden_states.append(hidden_state)
+        return (hidden_states,train)
+            
     def _statics_hidden(self):
         '''
         First,get the tokenize result of the corpus,
@@ -58,11 +93,12 @@ class Process(object):
                 hidden_states.append(hidden_state)
         return (hidden_states,train)
 
+            
     def _word_count(self,train):
         word_count = {}
         for words in train:
             for word in words:
-                if word in word_count:
+                if  word_count.has_key(word):
                     word_count[word] += 1
                 else:
                     word_count[word] = 1
@@ -99,14 +135,14 @@ class Process(object):
                 trans_prob[i][j] /= float(state_count[i])
         return (trans_prob,state_count)
     
-    def _cal_conf(self,h_s,word_count,train,state_count):
+    def _cal_conf(self,h_s,test_wordcount,word_count,train,state_count):
         conf_prob = {}
-        words = word_count.keys()
+        words = list(set(word_count.keys())|set(test_wordcount.keys()))
         print('The corpus has %d word'%(len(words)))
         for state in self._S:
             conf_prob[state] = {}
             for word in words:
-                conf_prob[state][word] = 0
+                conf_prob[state][word] = 1
         for i in range(len(h_s)):
             length = len(h_s[i])
             for j in range(length):
@@ -122,17 +158,22 @@ class Process(object):
         return conf_prob
         
 
-    def _tran_conf_prob(self,train,word_count,hidden_states):
+    def _tran_conf_prob(self,train,test_wordcount,word_count,hidden_states):
         #convert the hidden_state string to list
         hidden_states = self._convert(hidden_states)
         trans_prob,state_count = self._cal_trans(hidden_states)
-        conf_prob = self._cal_conf(hidden_states,word_count,train,state_count)
+        conf_prob = self._cal_conf(hidden_states,test_wordcount,word_count,train,state_count)
         
         return (conf_prob,trans_prob)
         
     def _word_sequence(self,test,o_hstate):
         sequence = []
+        f= open('./data/result','wb')
         for i in range(len(test)):
+            if o_hstate[i][-1] == 'M':
+                o_hstate[i][-1] = 'E'
+            elif o_hstate[i][-1] == 'B':
+                o_hstate[i][-1] = 'S'
             length = len(test[i])
             temp = []
             k = 0
@@ -142,14 +183,15 @@ class Process(object):
                 else :
                     s=test[i][k]
                     k+=1
-                    while o_hstate[i][k] != 'E':
+                    while o_hstate[i][k] != 'E' :
                         s += test[i][k]
                         k +=1
                     s += test[i][k]
                     temp.append(s)
                 k += 1
-            print ' '.join(temp)
+            f.write('%s\n'%(' '.join(temp)))
             sequence.append(' '.join(temp))
+        f.close()
             
         return sequence
     

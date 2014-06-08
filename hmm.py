@@ -98,7 +98,6 @@ class Model(object):
                     prob.append(temp)
                 prob =sorted(prob,reverse = True)
                 beta[index][state_to] = prob[0]
-
         return beta
     
     def _backward_point(self,beta,observations,state):
